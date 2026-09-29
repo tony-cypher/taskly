@@ -1,0 +1,16 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.log
+vite.log
+serve.log
+
+# Freebuff workspace metadata
+.freebuff/
+
+# Reference image not needed in the repo
+reference.jpg
+
+# Dependencies are ignored per-app by backend/.gitignore and frontend/.gitignore
+node_modules/
+vendor/

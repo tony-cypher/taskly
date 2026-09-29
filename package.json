@@ -1,0 +1,13 @@
+{
+  "name": "taskly",
+  "private": true,
+  "type": "module",
+  "description": "Taskly — convenience scripts to run the Laravel API and React frontend",
+  "scripts": {
+    "api": "cd backend && php -S 0.0.0.0:8000 -t public public/index.php",
+    "api:artisan": "cd backend && php artisan serve --host=127.0.0.1 --port=8000",
+    "web": "cd frontend && npm run dev",
+    "stop": "powershell -NoProfile -Command \"& { Get-NetTCPConnection -LocalPort 8000,5173 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { taskkill /PID $_ /T /F 2>$null }; $deadline = (Get-Date).AddSeconds(15); do { Start-Sleep -Milliseconds 500; $left = netstat -ano | Select-String ':8000|:5173' | Select-String -NotMatch 'TIME_WAIT' } while ($left -and (Get-Date) -lt $deadline); if ($left) { Write-Host 'WARNING: ports still busy - wait a few seconds or reboot.' } else { Write-Host 'Ports 8000 and 5173 are fully released.' } }\"",
+    "logs": "powershell -NoProfile -Command \"Get-Content backend/storage/logs/laravel.log -Wait -Tail 20\""
+  }
+}

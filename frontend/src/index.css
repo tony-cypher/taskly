@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-50: #f3f1ff;
+  --color-brand-100: #e9e5ff;
+  --color-brand-200: #d5cdff;
+  --color-brand-300: #b7a7ff;
+  --color-brand-400: #9575ff;
+  --color-brand-500: #7c5cfc;
+  --color-brand-600: #6d3ef1;
+  --color-brand-700: #5d2ed4;
+  --color-brand-800: #4c28ab;
+  --color-brand-900: #3f2587;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-[#eef0f8] text-slate-900 antialiased;
+}
+
+.dark body {
+  @apply bg-[#0c0d16] text-slate-100;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
