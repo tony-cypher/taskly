@@ -6,35 +6,38 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libsqlite3-dev \
     libzip-dev \
-    && docker-php-ext-install \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install \
     pdo_sqlite \
     mbstring \
     bcmath \
-    zip \
-    && rm -rf /var/lib/apt/lists/*
+    zip
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy composer files first for better Docker caching
-COPY composer.json composer.lock ./
+# Copy Composer files
+COPY composer.json composer.lock* ./
 
+# Install PHP dependencies
 RUN composer install \
     --no-dev \
     --no-interaction \
     --prefer-dist \
     --optimize-autoloader
 
-# Copy Laravel application
+# Copy application
 COPY . .
 
 # Create SQLite database
 RUN mkdir -p database \
     && touch database/database.sqlite
 
-# Make Laravel storage writable
+# Laravel writable directories
 RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 10000
