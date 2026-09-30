@@ -207,6 +207,34 @@ npm run preview        # serves dist on http://localhost:4173, /api still proxie
 - **Same origin** (frontend and API on one domain, e.g. behind Nginx: `/` → static dist, `/api` → Laravel): leave `VITE_API_URL` unset — the app calls `/api` relative to itself.
 - **Separate domain** (e.g. Vercel/Netlify for the SPA, API elsewhere): set `VITE_API_URL=https://api.your-domain.com/api` before `npm run build` (see [frontend/.env.example](frontend/.env.example)).
 
+### Deploy-platform settings (Vercel / Netlify / Railway-style fields)
+
+**Frontend (static SPA):**
+
+| Setting           | Value                                             |
+| ----------------- | ------------------------------------------------- |
+| Root directory    | `frontend`                                        |
+| Framework preset  | Vite                                              |
+| Install command   | `npm ci`                                          |
+| Build command     | `npm run build`                                   |
+| Output directory  | `dist`                                            |
+| Development command | `npm run dev`                                   |
+| Env vars          | `VITE_API_URL=https://<your-api-domain>/api` (only if the API is on another domain) |
+
+SPA routing fallback is preconfigured: [frontend/vercel.json](frontend/vercel.json) (Vercel) and [frontend/public/_redirects](frontend/public/_redirects) (Netlify) rewrite deep links like `/notes` to `index.html`.
+
+**Backend (PHP service — e.g. Railway, Render, Fly.io, or a VPS):**
+
+| Setting           | Value                                             |
+| ----------------- | ------------------------------------------------- |
+| Root directory    | `backend`                                         |
+| Install command   | `composer install --no-dev --optimize-autoloader` |
+| Build/release cmd | `php artisan migrate --force && php artisan config:cache route:cache view:cache` |
+| Start command     | `php -S 0.0.0.0:$PORT -t public public/index.php` (or Nginx + PHP-FPM) |
+| Env vars          | see below — set every variable from `backend/.env.production.example` in the platform dashboard |
+
+CORS: with the frontend on a *different* domain, Laravel must allow its origin. Laravel 12's default config allows `*`, but set `SANCTUM_STATEFUL_DOMAINS` and `session`/`cors` config if you later switch to cookie auth — with the current Bearer-token setup, no extra CORS work is needed as long as the framework default stands.
+
 ### 3. Run in production
 
 ```bash
@@ -223,9 +251,10 @@ npx vite preview --host --port 4173              # quick demo
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false` (never leak errors publicly)
 - [ ] Fresh `APP_KEY` generated on the server
+- [ ] SQLite file lives on a **persistent volume** (`DB_DATABASE=/data/database.sqlite` on Railway/Render/Fly — container filesystems are wiped on redeploys; on a VPS the default `backend/database/database.sqlite` is fine)
 - [ ] `php artisan config:cache route:cache view:cache` after each deploy
 - [ ] HTTPS enabled; keep `VITE_API_URL` on https too
-- [ ] Back up `backend/database/database.sqlite` (it holds all app data)
+- [ ] Back up the SQLite file (it holds all app data)
 - [ ] Web server blocks access to `backend/.env` and `backend/storage` (only `backend/public` should be web-rooted)
 
 ---

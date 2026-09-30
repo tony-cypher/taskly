@@ -1,0 +1,42 @@
+FROM php:8.4-cli
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libsqlite3-dev \
+    libzip-dev \
+    && docker-php-ext-install \
+    pdo_sqlite \
+    mbstring \
+    bcmath \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copy composer files first for better Docker caching
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
+# Copy Laravel application
+COPY . .
+
+# Create SQLite database
+RUN mkdir -p database \
+    && touch database/database.sqlite
+
+# Make Laravel storage writable
+RUN chmod -R 775 storage bootstrap/cache
+
+EXPOSE 10000
+
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
